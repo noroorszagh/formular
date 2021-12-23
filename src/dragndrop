@@ -1,0 +1,104 @@
+import {useFormikContext} from 'formik'
+import {FC} from 'react'
+
+
+
+import {TrashIcon} from '@/components/common/icons/TrashIcon'
+import {FormikDropzone} from '@/components/FormikDropzone'
+import {useDropzoneContent} from '@/content/dropzone'
+import {useTranslation} from '@/i18n'
+import {DROPZONE_HEIGHT_DESKTOP, DROPZONE_HEIGHT_MOBILE} from '@/theme/sizing'
+import {theme} from '@/theme/theme'
+import {maxFileSize} from '@/utils/constants'
+import {MOBILE_SCREENSIZE} from '@/utils/styles/breakpoints'
+
+import {VerificationFields} from '../../types'
+
+type dragndrop = {
+  accept?: string
+}
+
+export const TrademarkDropzone: FC<dragndrop> = ({accept = 'image/*'}) => {
+  const {t} = useTranslation('common')
+  const {values, setFieldValue, setFieldError, setFieldTouched} = useFormikContext<
+    VerificationFields
+  >()
+  const {dropzoneNote, buttonDeleteText} = useDropzoneContent()
+
+  return (
+    <>
+      <div className="dropzone">
+        <FormikDropzone
+          setFieldValue={setFieldValue}
+          setFieldError={setFieldError}
+          setFieldTouched={setFieldTouched}
+          isFileUploaded={values.file}
+          maxFileSize={maxFileSize}
+          accept={accept}
+        />
+        {values.file && values.file.type !== '' && (
+          <div className="preview">
+            <img className="thumbnail" src={URL.createObjectURL(values.file)} alt="Thumbnail" />
+          </div>
+        )}
+      </div>
+      <div className="footer">
+        <Text variant={TextVariant.body2} color={theme.palette.text.light} className="italic">
+          {t(dropzoneNote)}
+        </Text>
+        {values.file && (
+          <div className="button-wrapper">
+            <Button
+              icon={<TrashIcon />}
+              type="button"
+              fullWidth
+              onClick={() => {
+                setFieldValue('file', undefined)
+                setFieldTouched('file', false)
+              }}
+            >
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <style jsx>{`
+        .dropzone {
+          position: relative;
+          height: ${DROPZONE_HEIGHT_DESKTOP};
+          background-color: ${theme.palette.background.butterLight};
+        }
+        .preview {
+          width: 100%;
+          height: 100%;
+          background-color: ${theme.palette.background.butter};
+          position: absolute;
+          top: 0;
+          padding: ${theme.spacing[4]} ${theme.spacing[7]};
+        }
+        .thumbnail {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+        .footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-top: ${theme.spacing[2]};
+        }
+        @media ${MOBILE_SCREENSIZE} {
+          .dropzone {
+            height: ${DROPZONE_HEIGHT_MOBILE};
+          }
+          .preview {
+            padding: ${theme.spacing[3]};
+          }
+          .footer {
+            flex-wrap: wrap;
+          }
+        }
+      `}</style>
+    </>
+  )
+}
